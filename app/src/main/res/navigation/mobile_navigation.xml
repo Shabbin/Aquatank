@@ -18,6 +18,12 @@
         tools:layout="@layout/fragment_history" />
 
     <fragment
+        android:id="@+id/navigation_users"
+        android:name="com.example.watertracker.ui.users.UsersFragment"
+        android:label="Users"
+        tools:layout="@layout/fragment_users" />
+
+    <fragment
         android:id="@+id/navigation_information"
         android:name="com.example.watertracker.ui.information.InformationFragment"
         android:label="@string/title_information"
