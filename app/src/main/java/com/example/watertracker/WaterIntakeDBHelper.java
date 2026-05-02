@@ -8,10 +8,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import com.example.watertracker.ui.users.User;
 public class WaterIntakeDBHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "water_intake_db";
 
     private static final String TABLE_NAME = "water_intake";
@@ -24,7 +24,12 @@ public class WaterIntakeDBHelper extends SQLiteOpenHelper {
     private static final String KEY_LOG_DATE = "log_date";
     private static final String KEY_LOG_TIME = "log_time";
     private static final String KEY_LOG_AMOUNT_ML = "amount_ml";
-
+    private static final String TABLE_USERS = "users";
+    private static final String KEY_USER_ID = "id";
+    private static final String KEY_USER_NAME = "name";
+    private static final String KEY_USER_EMAIL = "email";
+    private static final String KEY_USER_STATUS = "status";
+    private static final String KEY_USER_INITIALS = "initials";
     public WaterIntakeDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -46,13 +51,25 @@ public class WaterIntakeDBHelper extends SQLiteOpenHelper {
 
         db.execSQL(createSummaryTable);
         db.execSQL(createLogsTable);
+        createUsersTable(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_WATER_LOGS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-        onCreate(db);
+        if (oldVersion < 4) {
+            createUsersTable(db);
+        }
+    }
+    private void createUsersTable(SQLiteDatabase db) {
+        String createUsersTable = "CREATE TABLE IF NOT EXISTS " + TABLE_USERS + "("
+                + KEY_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + KEY_USER_NAME + " TEXT,"
+                + KEY_USER_EMAIL + " TEXT,"
+                + KEY_USER_STATUS + " TEXT,"
+                + KEY_USER_INITIALS + " TEXT"
+                + ")";
+
+        db.execSQL(createUsersTable);
     }
 
     public void addOrUpdateIntakeRecord(IntakeRecord record) {
@@ -275,5 +292,92 @@ public class WaterIntakeDBHelper extends SQLiteOpenHelper {
         }
 
         db.close();
+    }
+    public void seedUsersIfEmpty() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_USERS, null);
+
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+
+        cursor.close();
+
+        if (count == 0) {
+            insertUser(db, new User("Ayesha Rahman", "ayesha@example.com", "Active", "AR"));
+            insertUser(db, new User("Tanvir Hasan", "tanvir@example.com", "Active", "TH"));
+            insertUser(db, new User("Nusrat Jahan", "nusrat@example.com", "Pending", "NJ"));
+            insertUser(db, new User("Mahmud Khan", "mahmud@example.com", "Inactive", "MK"));
+            insertUser(db, new User("Sadia Islam", "sadia@example.com", "Active", "SI"));
+            insertUser(db, new User("Munir Khondokar", "sadia@example.com", "Active", "SI"));
+        }
+
+        db.close();
+    }
+
+    private long insertUser(SQLiteDatabase db, User user) {
+        ContentValues values = new ContentValues();
+        values.put(KEY_USER_NAME, user.getName());
+        values.put(KEY_USER_EMAIL, user.getEmail());
+        values.put(KEY_USER_STATUS, user.getStatus());
+        values.put(KEY_USER_INITIALS, user.getInitials());
+
+        return db.insert(TABLE_USERS, null, values);
+    }
+
+    public long addUser(User user) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_USER_NAME, user.getName());
+        values.put(KEY_USER_EMAIL, user.getEmail());
+        values.put(KEY_USER_STATUS, user.getStatus());
+        values.put(KEY_USER_INITIALS, user.getInitials());
+
+        long insertedId = db.insert(TABLE_USERS, null, values);
+        db.close();
+
+        return insertedId;
+    }
+
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(
+                TABLE_USERS,
+                new String[]{
+                        KEY_USER_ID,
+                        KEY_USER_NAME,
+                        KEY_USER_EMAIL,
+                        KEY_USER_STATUS,
+                        KEY_USER_INITIALS
+                },
+                null,
+                null,
+                null,
+                null,
+                KEY_USER_ID + " ASC"
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                User user = new User();
+                user.setId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_USER_ID)));
+                user.setName(cursor.getString(cursor.getColumnIndexOrThrow(KEY_USER_NAME)));
+                user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(KEY_USER_EMAIL)));
+                user.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(KEY_USER_STATUS)));
+                user.setInitials(cursor.getString(cursor.getColumnIndexOrThrow(KEY_USER_INITIALS)));
+
+                users.add(user);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return users;
     }
 }

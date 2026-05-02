@@ -11,14 +11,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.watertracker.R;
+import com.example.watertracker.WaterIntakeDBHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UsersFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
+    private WaterIntakeDBHelper dbHelper;
 
     @Override
     public View onCreateView(
@@ -28,25 +29,23 @@ public class UsersFragment extends Fragment {
     ) {
         View root = inflater.inflate(R.layout.fragment_users, container, false);
 
+        dbHelper = new WaterIntakeDBHelper(requireContext());
+
         recyclerView = root.findViewById(R.id.recycler_users);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setHasFixedSize(false);
 
-        userAdapter = new UserAdapter(getDummyUsers());
-        recyclerView.setAdapter(userAdapter);
+        loadUsersFromDatabase();
 
         return root;
     }
 
-    private List<User> getDummyUsers() {
-        List<User> users = new ArrayList<>();
+    private void loadUsersFromDatabase() {
+        dbHelper.seedUsersIfEmpty();
 
-        users.add(new User("Ayesha Rahman", "ayesha@example.com", "Active", "AR"));
-        users.add(new User("Tanvir Hasan", "tanvir@example.com", "Active", "TH"));
-        users.add(new User("Nusrat Jahan", "nusrat@example.com", "Pending", "NJ"));
-        users.add(new User("Mahmud Khan", "mahmud@example.com", "Inactive", "MK"));
-        users.add(new User("Sadia Islam", "sadia@example.com", "Active", "SI"));
+        List<User> users = dbHelper.getAllUsers();
 
-        return users;
+        userAdapter = new UserAdapter(users);
+        recyclerView.setAdapter(userAdapter);
     }
 }
