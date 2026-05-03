@@ -25,7 +25,7 @@
         android:id="@+id/text_users_subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Dummy users for now"
+        android:text="See how others are doing today and stay inspired."
         android:textSize="14sp"
         android:textColor="#6B7280"
         android:layout_marginStart="20dp"

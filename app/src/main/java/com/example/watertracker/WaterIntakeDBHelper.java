@@ -294,27 +294,9 @@ public class WaterIntakeDBHelper extends SQLiteOpenHelper {
         db.close();
     }
     public void seedUsersIfEmpty() {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_USERS, null);
-
-        int count = 0;
-        if (cursor.moveToFirst()) {
-            count = cursor.getInt(0);
-        }
-
-        cursor.close();
-
-        if (count == 0) {
-            insertUser(db, new User("Ayesha Rahman", "ayesha@example.com", "Active", "AR"));
-            insertUser(db, new User("Tanvir Hasan", "tanvir@example.com", "Active", "TH"));
-            insertUser(db, new User("Nusrat Jahan", "nusrat@example.com", "Pending", "NJ"));
-            insertUser(db, new User("Mahmud Khan", "mahmud@example.com", "Inactive", "MK"));
-            insertUser(db, new User("Sadia Islam", "sadia@example.com", "Active", "SI"));
-            insertUser(db, new User("Munir Khondokar", "sadia@example.com", "Active", "SI"));
-        }
-
-        db.close();
+        // Users screen now uses community progress showcase data from UsersFragment.
+        // Keeping this method empty prevents old user seed data from conflicting
+        // with the new progress-based User model.
     }
 
     private long insertUser(SQLiteDatabase db, User user) {
